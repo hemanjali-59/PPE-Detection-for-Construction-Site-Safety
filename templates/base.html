@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}PPE Detection{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div>
+                <p class="eyebrow">PPE Safety System</p>
+                <h1>PPE Safety Detection</h1>
+            </div>
+            <span class="model-count">Five YOLO Detectors</span>
+        </div>
+    </header>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="container footer">
+        Select a model, adjust the confidence threshold, and inspect the detection results.
+    </footer>
+</body>
+</html>

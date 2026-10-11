@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Upload Image · PPE Detection{% endblock %}
+{% block content %}
+<section class="hero card">
+    <div>
+        <p class="eyebrow">Image Inspection</p>
+        <h2>Select a model and inspect one image</h2>
+        <p>Choose a trained detector, set the minimum confidence, and upload a PPE image.</p>
+    </div>
+</section>
+
+{% if error %}
+<div class="alert" role="alert"><strong>Could not run detection.</strong> {{ error }}</div>
+{% endif %}
+
+<section class="grid two-column">
+    <form class="card form-card" method="post" enctype="multipart/form-data">
+        <h3>Detection settings</h3>
+
+        <label for="model">Model</label>
+        <select id="model" name="model" required>
+            {% for model in models %}
+            <option value="{{ model.name }}" {% if model.name == selected_model %}selected{% endif %} {% if not model.available %}disabled{% endif %}>
+                {{ model.name }} · {{ model.size|title }}{% if not model.available %} (missing){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="confidence">Minimum detection confidence</label>
+        <div class="confidence-control">
+            <input id="confidence-range" type="range" min="0.05" max="0.95" step="0.05" value="{{ confidence }}" aria-label="Confidence slider">
+            <input id="confidence" name="confidence" type="number" min="0.05" max="0.95" step="0.05" value="{{ confidence }}" required>
+        </div>
+        <p class="hint">Use a lower value for more detections or a higher value for stricter results.</p>
+
+        <label for="image">Image</label>
+        <input id="image" name="image" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required>
+        <p class="hint">JPG, JPEG, or PNG; maximum 10 MB.</p>
+
+        <button type="submit">Detect PPE</button>
+    </form>
+
+    <div class="card">
+        <h3>Available model files</h3>
+        <div class="model-list">
+            {% for model in models %}
+            <div class="model-row">
+                <div>
+                    <strong>{{ model.name }}</strong>
+                    <small>{{ model.family }} · {{ model.size }}</small>
+                </div>
+                <span class="pill {{ 'ok' if model.available else 'bad' }}">
+                    {% if model.available %}{{ '%.2f'|format(model.size_mb) }} MB{% else %}Missing{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+    const confidenceRange = document.getElementById('confidence-range');
+    const confidenceNumber = document.getElementById('confidence');
+    confidenceRange.addEventListener('input', () => { confidenceNumber.value = confidenceRange.value; });
+    confidenceNumber.addEventListener('input', () => { confidenceRange.value = confidenceNumber.value; });
+</script>
+{% endblock %}

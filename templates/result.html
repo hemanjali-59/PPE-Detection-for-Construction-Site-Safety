@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ selected_model }} Result · PPE Detection{% endblock %}
+{% block content %}
+<div class="result-heading">
+    <div>
+        <p class="eyebrow">Detection Complete</p>
+        <h2>Selected Model: {{ selected_model }}</h2>
+        <p>Minimum confidence used: {{ '%.0f%%'|format(confidence_threshold * 100) }}</p>
+    </div>
+    <a class="secondary-button" href="{{ url_for('index') }}">Test another image</a>
+</div>
+
+<section class="grid status-grid">
+    <div class="card status-card {{ 'violation' if compliance.violations else 'compliant' }}">
+        <p class="eyebrow">PPE Status</p>
+        <h3>{{ compliance.status }}</h3>
+        <p>Persons detected: {{ compliance.person_count }}</p>
+    </div>
+    <div class="card violation-card">
+        <p class="eyebrow">Violation Details</p>
+        {% if compliance.violations %}
+        <ul class="violations">
+            {% for violation in compliance.violations %}<li>{{ violation }}</li>{% endfor %}
+        </ul>
+        {% else %}
+        <p class="safe-message">No explicit PPE violation class was detected.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="card">
+    <h3>Detected objects and per-object confidence</h3>
+    {% if detections %}
+    <div class="detections">
+        {% for item in detections %}
+        <div class="detection-row {{ 'negative-detection' if item.class_name.lower().replace('_', '-').startswith('no-') else '' }}">
+            <span>{{ item.class_name }}</span>
+            <strong>{{ '%.1f%%'|format(item.confidence * 100) }}</strong>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No objects were detected above the selected threshold.</p>
+    {% endif %}
+</section>
+
+<section class="grid image-grid">
+    <figure class="card">
+        <figcaption>Original image</figcaption>
+        <img src="{{ original_url }}" alt="Original uploaded image">
+    </figure>
+    <figure class="card">
+        <figcaption>Annotated detection image</figcaption>
+        <img src="{{ annotated_url }}" alt="Image with YOLO detection boxes">
+    </figure>
+</section>
+
+<section class="grid two-column">
+    <div class="card metrics-card">
+        <h3>Saved evaluation metrics</h3>
+        <p class="hint">These values come from the saved test evaluation for the selected model.</p>
+        <div class="metrics-grid">
+            {% for label, value in metrics.items() %}
+            <div class="metric metric-{{ loop.index }}">
+                <span>{{ label }}</span>
+                <strong>{% if value is none %}N/A{% else %}{{ '%.2f%%'|format(value * 100) }}{% endif %}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <figure class="card chart-card">
+        <figcaption>Detection confidence chart</figcaption>
+        <img src="{{ chart_url }}" alt="Bar chart of detected classes and confidence scores">
+    </figure>
+</section>
+{% endblock %}
